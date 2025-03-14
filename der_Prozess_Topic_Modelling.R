@@ -29,7 +29,7 @@ textdata <- sapply(textdata, paste, collapse = " ")
 prozess_corpus <- corpus(textdata)
 lemma_data <- as.data.frame(udpipe_annotate(ud_model, x = paste(textdata, collapse = " ")))
 lemma_list <- lapply(textdata, function(x) as.data.frame(udpipe_annotate(ud_model, x = x)))
-# lemma_data <- do.call(rbind, lemma_list)
+lemma_data <- do.call(rbind, lemma_list)
 lemma_data$lemma[is.na(lemma_data$lemma)] <- lemma_data$token[is.na(lemma_data$lemma)]
 stopwords <- stopwords("de")
 
@@ -103,10 +103,8 @@ for (topic in topicsToFilter) {
 }
 
 require(wordcloud2)
-topicToViz <- 14
+topicToViz <- 8
 top40terms <- sort(tmResult$terms[topicToViz, ], decreasing = TRUE)[1:40]
 words <- names(top40terms)
 probabilities <- sort(tmResult$terms[topicToViz, ], decreasing = TRUE)[1:40]
 wordcloud2(data.frame(words, probabilities), shuffle = FALSE)
-
-#tes
