@@ -109,4 +109,4 @@ words <- names(top40terms)
 probabilities <- sort(tmResult$terms[topicToViz, ], decreasing = TRUE)[1:40]
 wordcloud2(data.frame(words, probabilities), shuffle = FALSE)
 
-#test
+#tes
