@@ -17,14 +17,19 @@ textdata <- readLines("C:/Users/sophi/OneDrive/Dokumente/R/Brief/kafka_Brief_191
 textdata <- paste(textdata, collapse = " ")
 
 #nur für die Werkesammlung
-#text_dir <- "C:/Users/sophi/OneDrive/Dokumente/R/texte/"
-#textdata <- sapply(list.files(text_dir, pattern = "\\.txt$", full.names = TRUE), readLines, encoding = "UTF-8")
-#textdata <- sapply(textdata, paste, collapse = " ")  
+text_dir <- "C:/Users/sophi/OneDrive/Dokumente/R/texte/"
+textdata <- sapply(list.files(text_dir, pattern = "\\.txt$", full.names = TRUE), readLines, encoding = "UTF-8")
+textdata <- sapply(textdata, paste, collapse = " ")  
+
+#nur Texte mit explizitem Vater
+text_dir <- "C:/Users/sophi/OneDrive/Dokumente/R/Vater"
+textdata <- sapply(list.files(text_dir, pattern = "\\.txt$", full.names = TRUE), readLines, encoding = "UTF-8")
+textdata <- sapply(textdata, paste, collapse = " ")
 
 prozess_corpus <- corpus(textdata)
 lemma_data <- as.data.frame(udpipe_annotate(ud_model, x = paste(textdata, collapse = " ")))
 lemma_list <- lapply(textdata, function(x) as.data.frame(udpipe_annotate(ud_model, x = x)))
-lemma_data <- do.call(rbind, lemma_list)
+# lemma_data <- do.call(rbind, lemma_list)
 lemma_data$lemma[is.na(lemma_data$lemma)] <- lemma_data$token[is.na(lemma_data$lemma)]
 stopwords <- stopwords("de")
 
@@ -59,7 +64,6 @@ textdata <- textdata[sel_idx]
 
 #LDA############################################################################
 
-require(topicmodels)
 K <- 20
 topicModel <- LDA(DTM, K, method="Gibbs", control=list(iter = 500, seed = 1, verbose = 25, alpha = 0.02))
 
@@ -88,13 +92,16 @@ svd_tsne <- function(x) {
 json <- createJSON(phi = beta, theta = theta, doc.length = rowSums(DTM), vocab = colnames(DTM), term.frequency = colSums(DTM), mds.method = svd_tsne, plot.opts = list(xlab = "", ylab = ""))
 serVis(json)
 
-#Filtering the documents########################################################
+#Filtering the topics###########################################################
 
-topicsToFilter <- grep("Vater", topicNames, ignore.case = TRUE)
+topicsToFilter <- grep("vater", topicNames, ignore.case = TRUE)
 print(topicsToFilter)
 
+for (topic in topicsToFilter) {
+  cat("\nWichtige Begriffe für Topic", topic, ":\n")
+  print(terms(topicModel, 10)[, topic])
+}
 
-install.packages("wordcloud2")
 require(wordcloud2)
 topicToViz <- 14
 top40terms <- sort(tmResult$terms[topicToViz, ], decreasing = TRUE)[1:40]
@@ -102,4 +109,4 @@ words <- names(top40terms)
 probabilities <- sort(tmResult$terms[topicToViz, ], decreasing = TRUE)[1:40]
 wordcloud2(data.frame(words, probabilities), shuffle = FALSE)
 
-topicToViz <- grep("Vater", topicNames, ignore.case = TRUE)
+#test
